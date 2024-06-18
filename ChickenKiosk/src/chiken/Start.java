@@ -73,7 +73,7 @@ public class Start {
                     });
                 }
 
-                // 메뉴 화면을 화면 중앙에 표시
+                // 메뉴 화면을 화면 중앙에 표시2
                 menuFrame.setLocationRelativeTo(frame);
                 menuFrame.setVisible(true);
             });
