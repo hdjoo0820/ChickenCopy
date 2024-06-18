@@ -19,6 +19,8 @@ public class Start {
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             // JFrame 설정
+        	
+        	// 주석하나 만들었음
             JFrame frame = new JFrame("처갓집 죽여보자고 ㅋ");
             frame.setSize(650, 400);
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
