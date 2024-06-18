@@ -1,27 +1,24 @@
 package chiken;
 
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.GridLayout;
-
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Start {
-    
+
     private static int totalPrice = 0;
-    private static JLabel priceLabel;
+    private static JLabel totalLabel;
+    private static DefaultListModel<String> chickenListModel = new DefaultListModel<>();
+    private static Map<String, Integer> chickenCountMap = new HashMap<>();
+    private static JFrame frame, menuFrame, totalFrame;
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             // JFrame 설정
-        	
-        	// 주석하나 만들었음
-            JFrame frame = new JFrame("처갓집 죽여보자고 ㅋ");
+            frame = new JFrame("처갓집 죽여보자고 ㅋ");
             frame.setSize(650, 400);
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             frame.setLayout(null); // 레이아웃 매니저 해제
@@ -45,9 +42,9 @@ public class Start {
             // 버튼 클릭 이벤트 처리
             button.addActionListener(e -> {
                 // 메뉴 화면 프레임
-                JFrame menuFrame = new JFrame("메뉴 화면");
-                menuFrame.setSize(600, 600);
-                menuFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);               
+                menuFrame = new JFrame("메뉴 화면");
+                menuFrame.setSize(900, 900);
+                menuFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
                 menuFrame.setLayout(new GridLayout(3, 3)); // 3x3 그리드 레이아웃 설정
 
                 // 이미지 아이콘들
@@ -73,9 +70,60 @@ public class Start {
                     });
                 }
 
-                // 메뉴 화면을 화면 중앙에 표시2
+                // 합계 표시용 프레임
+                totalFrame = new JFrame("총 합계");
+                totalFrame.setSize(300, 600);
+                totalFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                totalFrame.setLayout(new BorderLayout());
+
+                totalLabel = new JLabel("총 가격: 0원");
+                totalLabel.setHorizontalAlignment(SwingConstants.CENTER);
+
+                JPanel chickenPanel = new JPanel();
+                chickenPanel.setLayout(new BoxLayout(chickenPanel, BoxLayout.Y_AXIS));
+
+                JScrollPane scrollPane = new JScrollPane(chickenPanel);
+
+                JButton payButton = new JButton("결제하기");
+                payButton.addActionListener(e4 -> {
+                    // 모든 프레임 닫기
+                    frame.dispose();
+                    menuFrame.dispose();
+                    totalFrame.dispose();
+
+                    // 결제 성공 메시지 프레임
+                    JFrame successFrame = new JFrame("결제 성공");
+                    successFrame.setSize(300, 200);
+                    successFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                    successFrame.setLayout(new BorderLayout());
+                    JLabel successLabel = new JLabel("결제 성공!", SwingConstants.CENTER);
+                    successFrame.add(successLabel, BorderLayout.CENTER);
+
+                    JButton successButton = new JButton("확인");
+                    successButton.addActionListener(e5 -> {
+                        successFrame.dispose();
+                    });
+                    successFrame.add(successButton, BorderLayout.SOUTH);
+
+                    successFrame.setLocationRelativeTo(null);
+                    successFrame.setVisible(true);
+                });
+
+                totalFrame.add(totalLabel, BorderLayout.NORTH);
+                totalFrame.add(scrollPane, BorderLayout.CENTER);
+                totalFrame.add(payButton, BorderLayout.SOUTH);
+
+                // 메뉴 프레임과 합계 프레임 위치 설정
                 menuFrame.setLocationRelativeTo(frame);
+                Point menuLocation = menuFrame.getLocation();
+                totalFrame.setLocation(menuLocation.x + menuFrame.getWidth() + 10, menuLocation.y);
+
+                // 메뉴 화면을 화면 중앙에 표시
                 menuFrame.setVisible(true);
+                totalFrame.setVisible(true);
+
+                // 초기 치킨 목록 업데이트
+                updateChickenList(chickenPanel);
             });
 
             // JFrame 표시
@@ -92,14 +140,14 @@ public class Start {
 
         // 치킨 종류와 가격 정보
         String[] chickenTypes = {
-            "후라이드", "양념치킨", "간장치킨", 
-            "마늘치킨", "파닭", "치즈치킨", 
-            "고추치킨", "바베큐치킨", "허니갈릭치킨"
+            "후라이드", "반반치킨", "양념치킨",
+            "트러플 슈프림 양념치킨", "파인유자", "골드치즈",
+            "슈프림 골드 양념치킨", "와락윙", "와락치킨"
         };
         int[] prices = {
             18000, 20000, 20000,
-            22000, 23000, 25000,
-            24000, 26000, 27000
+            21000, 22000, 20000,
+            20000, 20000, 19000
         };
 
         JLabel chickenLabel = new JLabel(chickenTypes[index] + ": " + prices[index] + "원");
@@ -107,8 +155,19 @@ public class Start {
 
         JButton addButton = new JButton("추가");
         addButton.addActionListener(e -> {
-            totalPrice += prices[index];
-            updatePriceLabel();
+            String chickenName = chickenTypes[index];
+            int price = prices[index];
+
+            totalPrice += price;
+
+            if (chickenCountMap.containsKey(chickenName)) {
+                chickenCountMap.put(chickenName, chickenCountMap.get(chickenName) + 1);
+            } else {
+                chickenCountMap.put(chickenName, 1);
+            }
+
+            updateChickenList((JPanel) ((JScrollPane) totalFrame.getContentPane().getComponent(1)).getViewport().getView());
+            updateTotalLabel();
             priceFrame.dispose();
         });
         priceFrame.add(addButton);
@@ -123,9 +182,60 @@ public class Start {
         priceFrame.setVisible(true);
     }
 
-    private static void updatePriceLabel() {
-        if (priceLabel != null) {
-            priceLabel.setText("총 가격: " + totalPrice + "원");
+    private static void updateChickenList(JPanel chickenPanel) {
+        chickenPanel.removeAll();
+        for (Map.Entry<String, Integer> entry : chickenCountMap.entrySet()) {
+            String chickenName = entry.getKey();
+            int count = entry.getValue();
+
+            JLabel chickenLabel = new JLabel(count > 1 ? chickenName + " + " + count : chickenName);
+            chickenPanel.add(chickenLabel);
+
+            JButton cancelButton = new JButton("선택 취소");
+            cancelButton.addActionListener(e -> {
+                totalPrice -= getPriceByName(chickenName);
+                if (chickenCountMap.get(chickenName) > 1) {
+                    chickenCountMap.put(chickenName, chickenCountMap.get(chickenName) - 1);
+                } else {
+                    chickenCountMap.remove(chickenName);
+                }
+                updateChickenList(chickenPanel);
+                updateTotalLabel();
+            });
+            chickenPanel.add(cancelButton);
+        }
+        chickenPanel.revalidate();
+        chickenPanel.repaint();
+    }
+
+    private static void updateTotalLabel() {
+        if (totalLabel != null) {
+            totalLabel.setText("총 가격: " + totalPrice + "원");
+        }
+    }
+
+    private static int getPriceByName(String name) {
+        switch (name) {
+            case "후라이드":
+                return 18000;
+            case "반반치킨":
+                return 20000;
+            case "양념치킨":
+                return 20000;
+            case "트러플 슈프림 양념치킨":
+                return 21000;
+            case "파인유자":
+                return 22000;
+            case "골드치즈":
+                return 20000;
+            case "슈프림 골드 양념치킨":
+                return 20000;
+            case "와락윙":
+                return 20000;
+            case "와락치킨":
+                return 19000;
+            default:
+                return 0;
         }
     }
 }
