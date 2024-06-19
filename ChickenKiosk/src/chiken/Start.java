@@ -18,7 +18,7 @@ public class Start {
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             // JFrame 설정
-            frame = new JFrame("처갓집 죽여보자고 ㅋ");
+            frame = new JFrame("치킨메뉴판");
             frame.setSize(650, 400);
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             frame.setLayout(null); // 레이아웃 매니저 해제
